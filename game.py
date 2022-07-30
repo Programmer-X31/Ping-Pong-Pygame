@@ -1,89 +1,49 @@
 import pygame
 from pygame import mixer
+import time
+from entities import Paddle, Ball
 
 GAME_WIDTH = 800
 GAME_HEIGHT = 600
-GAME_TITLE = "H4CK3D"
+GAME_TITLE = "PING-PONG"
+FPS = 60
 
 pygame.init()
-
-
-class Paddle():
-    def __init__(self, screen, width, height):
-        # Position
-        self.x = 300
-        self.y = 550
-        self.x_offset = 0
-        self.speed = 7
-
-        # Surrounding Environemnt
-        self.game_width = width
-        self.game_height = height
-        self.screen = screen
-
-        # Properties
-        self.color = (255, 255, 255)
-        self.sizeX = 100
-        self.sizeY = 20
-
-    def draw(self):
-        pygame.draw.rect(self.screen, self.color,
-                         pygame.Rect(self.x, self.y, self.sizeX, self.sizeY))
-
-    def moveRight(self):
-        self.x_offset += self.speed
-
-    def moveLeft(self):
-        self.x_offset -= self.speed
-
-    def update(self):  # Run this in order to create paddle
-        pygame.draw.rect(self.screen, self.color,
-                         pygame.Rect(self.x, self.y, self.sizeX, self.sizeY))
-        self.x += self.x_offset
-
-        if self.x >= (self.game_width - 64):
-            self.x = 736
-        if self.x <= 0:
-            self.x = 0
-
-
-class Obstacle():
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.speed = 6
-
-    def draw(self):
-        pass
-
-    def update():
-        pass
-
+pygame.display.set_caption(GAME_TITLE)
+screen = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
 
 appRunning = True
+
 # Player Initialization
+paddle = Paddle(screen, GAME_WIDTH, GAME_HEIGHT)
+ball = Ball(screen)
 
-screen = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
-paddle = Paddle(screen, 800, 600)
-
-pygame.display.set_caption(GAME_TITLE)
+# Delta time implementation for Constant Movement
 clock = pygame.time.Clock()
+prev_time = time.time()
+
 # Main Loop
 while appRunning:
     screen.fill((0, 0, 0))
-    clock.tick(60)
+
+    # Deltatime
+    clock.tick(FPS)
+    now = time.time()
+    dt = now - prev_time
+    prev_time = now
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             appRunning = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                paddle.moveLeft()
+            if event.key == pygame.K_LEFT and event.key != pygame.K_RIGHT:
+                paddle.moveLeft(dt)
             if event.key == pygame.K_RIGHT and event.type != pygame.K_LEFT:
-                paddle.moveRight()
+                paddle.moveRight(dt)
 
         if event.type == pygame.KEYUP:
             paddle.x_offset = 0
+    ball.draw()
 
-    paddle.update()  # Update Function
-    # screen.blit(paddle.image, (paddle.x, paddle.y))
-    pygame.display.flip()
+    paddle.update()
+    pygame.display.update()
